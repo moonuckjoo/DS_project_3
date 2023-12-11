@@ -1,0 +1,4 @@
+﻿  GraphMethod.cpp
+C:\Users\82104\Desktop\2학년\데구실\DS_project_3\src\GraphMethod.cpp(241,37): warning C4267: '인수': 'size_t'에서 'const int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\82104\Desktop\2학년\데구실\DS_project_3\src\GraphMethod.cpp(278,12): warning C4101: 'pivot' :참조되지 않은 지역 변수입니다.
+  project3.vcxproj -> C:\Users\82104\Desktop\2학년\데구실\DS_project_3\src\project3\x64\Debug\project3.exe

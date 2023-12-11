@@ -1,0 +1,6 @@
+LOAD graph_M.txt
+PRINT
+DFS Y 1
+DFS N 1
+BFS Y 1
+BFS N 1

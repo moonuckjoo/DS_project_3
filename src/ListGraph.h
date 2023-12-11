@@ -7,7 +7,6 @@ class ListGraph : public Graph{
 private:
 	map < int, int >* m_List;
 	vector<int>* kw_graph;
-	
 public:	
 	ListGraph(bool type, int size);
 	~ListGraph();
