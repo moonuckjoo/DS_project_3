@@ -1,6 +1,7 @@
-LOAD graph_M.txt
+LOAD graph_L.txt
 PRINT
 DFS Y 1
 DFS N 1
 BFS Y 1
 BFS N 1
+KRUSKAL

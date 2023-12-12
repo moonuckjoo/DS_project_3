@@ -15,7 +15,7 @@ MatrixGraph::MatrixGraph(bool type, int size) : Graph(type, size)
 
 MatrixGraph::~MatrixGraph()
 {	//delete memory
-	for (int i = 1; i < getSize(); i++) {
+	for (int i = getSize() - 1; i >0; i--) {
 		delete[] m_Mat[i];
 	}
 	delete[] m_Mat;

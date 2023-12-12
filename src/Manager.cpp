@@ -22,18 +22,22 @@ Manager::~Manager()
 
 void Manager::run(const char* command_txt) {
 	ifstream fin;	//Command File Input File Stream
-	string c_line;
+	string c_line= "";
 	fin.open(command_txt, ios_base::in);//File open with read mode
-
+	bool check = false; //check for graph exist
 	if (!fin) { //If command File cannot be read, Print error
 		fout << "command file open error" << endl;
 		return;	//Return
 	}
 	string cmd;
+	int cnt = 0;
 	while (getline(fin, c_line)) {
 		size_t len = c_line.find(' ');
 		cmd = c_line.substr(0, len);
 		if (cmd == "LOAD") {
+			if (check == true) { //if already exist graph , reset graph
+				delete graph;
+			}
 			string filename;
 			if (c_line[len + 1] == NULL) { //The number of factors does not match
 				printErrorCode(100);
@@ -49,41 +53,181 @@ void Manager::run(const char* command_txt) {
 				}
 			}
 			const char* filename_Array = filename.c_str();
+			check = true;
 			LOAD(filename_Array);
+			cnt++;
 		}
 		else if (cmd == "PRINT") {
+			if (cnt ==0 ) { // no graph
+				printErrorCode(200);
+				continue;
+			}
 			PRINT();
 		}
 		else if (cmd == "DFS") {
-			char type;
+			char type = NULL;
 			type = c_line[len + 1];
 			int num = 0;;
-			string temp;
+			string temp ="";
 			for (int i = len + 3; c_line[i] != NULL; i++) {
 				temp.push_back(c_line[i]);
 			}
-			num = stoi(temp);
-			if (!DFS(graph, type, num)) {
+			if (temp == "") { // no vertex
 				printErrorCode(400);
+				continue;
 			}
+			num = stoi(temp);
+			if (type == NULL) { //type error
+				printErrorCode(400);
+				continue;
+			}
+			if (graph->getSize() == 0 || cnt == 0) { // no graph
+				printErrorCode(400);
+				continue;
+			}
+			if ((graph->getSize() - 1) < num) { //no vertex
+				printErrorCode(400);
+				continue;
+			}
+			mDFS(type, num);
+				
 		}
 		else if (cmd == "BFS") {
-			char type;
+			if (graph->getSize() == 0 || cnt == 0) { // no graph
+				printErrorCode(300);
+				continue;
+			}
+			char type = NULL;
 			type = c_line[len + 1];
 			int num = 0;;
-			string temp;
+			string temp = "";
 			for (int i = len + 3; c_line[i] != NULL; i++) {
 				temp.push_back(c_line[i]);
 			}
-			num = stoi(temp);
-			if (!BFS(graph, type, num)) {
-				printErrorCode(300);
+			if (temp == "") { // no vertex
+				printErrorCode(400);
+				continue;
 			}
+			num = stoi(temp);
+			if (type == NULL) { //type error
+				printErrorCode(300);
+				continue;
+			}
+			if (graph->getSize() == 0 || cnt == 0) { // no graph
+				printErrorCode(300);
+				continue;
+			}
+			if ((graph->getSize() - 1) < num) { //no vertex
+				printErrorCode(300);
+				continue;
+			}
+			mBFS(type, num);
 
 		}
+		else if (cmd == "DIJKSTRA") {
+			char type = NULL;
+			type = c_line[len + 1];
+			int num = 0;;
+			string temp = "";
+			for (int i = len + 3; c_line[i] != NULL; i++) {
+				temp.push_back(c_line[i]);
+			}
+			if (temp == "") { // no vertex
+				printErrorCode(700);
+				continue;
+			}
+			num = stoi(temp);
+			if (type == NULL) { //type error
+				printErrorCode(700);
+				continue;
+			}
+			if (graph->getSize() == 0 || cnt == 0) { // no graph AND no LOAD
+				printErrorCode(700);
+				continue;
+			}
+			if ((graph->getSize() - 1) < num) { //no vertex
+				printErrorCode(700);
+				continue;
+			}
+			mDIJKSTRA(type, num);
+		}
+		else if (cmd == "KRUSKAL") {;
+		if (graph->getSize() == 0 || cnt == 0) { // no graph AND no LOAD
+			printErrorCode(600);
+			continue;
+		}
+		mKRUSKAL();
+		}
+		else if (cmd == "BELLMANFORD") {
+		char type = NULL;
+		type = c_line[len + 1];
+		int space=0;
+		int start = 0;;
+		int end = 0;
+		string temp = "";
+		string temp2 = "";
+		for (int i = len + 3; c_line[i] != NULL; i++) {
+			if(space ==0)
+				temp.push_back(c_line[i]);
+			else if (space == 1) {
+				temp2.push_back(c_line[i]);
+			}
+			else {
+				printErrorCode(800);
+				continue;
+			}
+		}
+		if (temp == ""||temp2=="") { // no vertex
+			printErrorCode(800);
+			continue;
+		}
+		start = stoi(temp);
+		end = stoi(temp2);
+		if (type == NULL) { //type error
+			printErrorCode(800);
+			continue;
+		}
+		if (graph->getSize() == 0 || cnt == 0) { // no graph AND no LOAD
+			printErrorCode(800);
+			continue;
+		}
+		if (((graph->getSize() - 1) < start)|| (graph->getSize() - 1) < end) { //no vertex
+			printErrorCode(800);
+			continue;
+		}
+		mBELLMANFORD(type, start,end);
+		}
+		else if (cmd == "FLOYD") {
+		char type = NULL;
+		type = c_line[len + 1];
+		if (type == NULL) { //type error
+			printErrorCode(700);
+			continue;
+		}
+		if (graph->getSize() == 0 || cnt == 0) { // no graph AND no LOAD
+			printErrorCode(700);
+			continue;
+		}
+		mFLOYD(type);
+		}
+		else if (cmd == "KWANGWOON") {
+		if (graph->getType() == 1) { //its matrix graph case handling
+			printErrorCode(700);
+			continue;
+		}
+		if (graph->getSize() == 0 || cnt == 0) { // no graph AND no LOAD
+			printErrorCode(700);
+			continue;
+		}
+		mKwoonWoon(1);
+		}
+		else if (cmd == "EXIT") {
+			return;
+		}
+		else {
+			printErrorCode(1000);
+		}
 	}
-	Kruskal(graph);
-	Dijkstra(graph, 'Y', 1);
 	fin.close();
 	return;
 }
@@ -197,36 +341,64 @@ bool Manager::PRINT()
 
 bool Manager::mBFS(char option, int vertex)
 {
+	if (!BFS(graph, option, vertex)) {
+		printErrorCode(300);
+		return false;
+	}
 	return true;
 }
 
 bool Manager::mDFS(char option, int vertex)
 {
+	if (!DFS( graph, option, vertex)) {
+		printErrorCode(400);
+		return false;
+	}
 	return true;
 }
 
 bool Manager::mDIJKSTRA(char option, int vertex)
 {
+	if (!Dijkstra(graph, option, vertex)) {
+		printErrorCode(700);
+		return false;
+	}
 	return true;
 }
 
 bool Manager::mKRUSKAL()
 {
+	if (!Kruskal(graph)) {
+		printErrorCode(600);
+		return false;
+	}
+
 	return true;
 }
 
 bool Manager::mBELLMANFORD(char option, int s_vertex, int e_vertex)
 {
+	if (!Bellmanford(graph, option, s_vertex, e_vertex)) {
+		printErrorCode(800);
+		return false;
+	}
 	return true;
 }
 
 bool Manager::mFLOYD(char option)
 {
+	if (FLOYD(graph, option)) {
+		printErrorCode(900);
+		return false;
+	}
 	return true;
 }
 
 bool Manager::mKwoonWoon(int vertex) {
-
+	if (!KWANGWOON( graph,  vertex)) {
+		printErrorCode(500);
+		return false;
+	}
 	return true;
 }
 

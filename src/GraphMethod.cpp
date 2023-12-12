@@ -10,7 +10,8 @@
 
 using namespace std;
 const int segment_size = 6;
-int parent[10000];
+int parent[10000] = {};
+
 bool BFS(Graph* graph, char option, int vertex)
 {
 	ofstream fout; // print to log.txt
@@ -18,7 +19,10 @@ bool BFS(Graph* graph, char option, int vertex)
 	queue<int> q;
 	if (option == 'Y') {
 		q.push(vertex);
-		bool* visited_Y = new bool[graph->getSize()]; // for check visit
+		bool visited_Y[10000] = {}; // for check visit
+		for (int i = 0; i < 10000; i++) {
+			visited_Y[i] = true;
+		}
 		for (int i = 0; i < graph->getSize(); i++) // initilize false
 			visited_Y[i] = false;
 		visited_Y[vertex] = true; // start vertex is visit
@@ -44,7 +48,6 @@ bool BFS(Graph* graph, char option, int vertex)
 			}
 
 		}
-		delete[] visited_Y;
 		delete[] m;
 
 		fout << endl << "======================" << endl << endl;
@@ -53,7 +56,10 @@ bool BFS(Graph* graph, char option, int vertex)
 	}
 	else if (option == 'N') {
 		q.push(vertex);
-		bool* visited_N = new bool[graph->getSize()]; // for check visit
+		bool visited_N[10000] = {}; // for check visit
+		for (int i = 0; i < 10000; i++) {
+			visited_N[i] = true;
+		}
 		for (int i = 0; i < graph->getSize(); i++) // initilize false
 			visited_N[i] = false;
 		visited_N[vertex] = true; // start vertex is visit
@@ -79,7 +85,6 @@ bool BFS(Graph* graph, char option, int vertex)
 			}
 
 		}
-		delete[] visited_N;
 		delete[] m;
 
 		fout << endl << "======================" << endl << endl;
@@ -100,7 +105,10 @@ bool DFS(Graph* graph, char option, int vertex)
 	fout.open("log.txt", ios::app);
 
 	if (option == 'Y') { //case of direction
-		bool* visited_Y = new bool[graph->getSize()]; // for check visit
+		bool visited_Y[10000] = {}; // for check visit
+		for (int i = 0; i < 10000; i++) {
+			visited_Y[i] = true;
+		}
 		map<int, int>* m = new map<int, int>[graph->getSize()]; // m is (to, weight)
 		for (int i = 0; i < graph->getSize(); i++) // initilize false
 			visited_Y[i] = false;
@@ -114,7 +122,6 @@ bool DFS(Graph* graph, char option, int vertex)
 		if (graph->getSize() == 1) // if graph has only one vertex
 		{
 			fout << vertex << endl;
-			delete[] visited_Y;
 			delete[] m;
 			fout << "======================" << endl << endl;
 			fout.close();
@@ -141,7 +148,6 @@ bool DFS(Graph* graph, char option, int vertex)
 					s.pop();
 				}
 			}
-			delete[] visited_Y;
 
 		}
 
@@ -152,7 +158,10 @@ bool DFS(Graph* graph, char option, int vertex)
 		return true;
 	}
 	else if (option == 'N') { //case of undirection
-		bool* visited_N = new bool[graph->getSize()]; // for check visit
+		bool visited_N[10000] = {}; // for check visit
+		for (int i = 0; i < 10000; i++) {
+			visited_N[i] = true;
+		}
 		map<int, int>* m = new map<int, int>[graph->getSize()]; // m is (to, weight)
 		for (int i = 0; i < graph->getSize(); i++) // initilize false
 			visited_N[i] = false;
@@ -166,7 +175,6 @@ bool DFS(Graph* graph, char option, int vertex)
 		if (graph->getSize() == 1) // if graph has only one vertex
 		{
 			fout << vertex << endl;
-			delete[] visited_N;
 			delete[] m;
 			fout << "======================" << endl << endl;
 			fout.close();
@@ -193,7 +201,6 @@ bool DFS(Graph* graph, char option, int vertex)
 					s.pop();
 				}
 			}
-			delete[] visited_N;
 			delete[] m;
 		}
 
@@ -203,9 +210,11 @@ bool DFS(Graph* graph, char option, int vertex)
 
 		return true;
 	}
-	else
+	else {
 		fout.close();
-	return false;
+		return false;
+	}
+	return true;
 }
 
 bool Kruskal(Graph* graph)
@@ -240,15 +249,24 @@ bool Kruskal(Graph* graph)
 
 	QuickSort(edges, 0, edges->size() - 1);
 	int result = 0;
+	int cnt = 0; //always number of edge is n-1
 	for (auto iter = edges->begin(); iter != edges->end(); iter++) {
 		if (!sameparent(iter->second.first, iter->second.second)) {
 			uni(iter->second.first, iter->second.second);
 			result += iter->first;
+			cnt++;
 		}
+	}
+
+	if (cnt != graph->getSize()-2) { //edge is n-1;
+		delete[] m;
+		delete edges;
+		return false;
 	}
 	fout << "cost: " << result << endl;
 	fout << "======================" << endl << endl;
 	delete[] m;
+	delete edges;
 	return true;
 }
 
@@ -264,7 +282,7 @@ bool Dijkstra(Graph* graph, char option, int vertex)
 			graph->getAdjacentEdgesDirect(i, s);
 
 			auto iter = s[i].begin();
-			while (iter != s[i].end()) {
+			while (iter != s[i].end()) {  //minus case handling
 				if (iter->second < 0) {
 					delete[] s;
 					delete[] nodes;
@@ -275,21 +293,26 @@ bool Dijkstra(Graph* graph, char option, int vertex)
 				iter++;
 			}
 		}
-		int dist[10000]; //vertex ~to , cost
+		int dist[10000] = {}; //vertex ~to , cost
 		priority_queue<pair<int, int>> pq; //cost, to
 		for (int i = 0; i < 10000; i++) {
-				dist[i] = INT_MAX;
+			dist[i] = INT_MAX;
 		}
-		
 
-		pq.push({0, vertex});
+
+		pq.push({ 0, vertex });
 		dist[vertex] = 0;
 		fout << "======== Dijkstra ========" << endl;
 		fout << "Directed Graph Dijkstra result " << endl;
 		fout << "startvertex: " << vertex << endl;
 
 		stack <int>* path = new stack<int>[graph->getSize()];
-		int* result = new int[graph->getSize()];
+		int prev[10000] = {};
+		for (int i = 0; i < 1000; i++) {
+			prev[i] = INT_MAX;
+		}
+		prev[vertex] = vertex;
+		int result[10000] = {};
 		for (int i = 0; i < graph->getSize(); i++) {
 			result[i] = 0;
 		}
@@ -305,92 +328,586 @@ bool Dijkstra(Graph* graph, char option, int vertex)
 				if (via_cost < dist[nxt_node]) {
 					result[nxt_node] = 0;
 					dist[nxt_node] = via_cost;
+					prev[nxt_node] = from;
 					pq.push({ -via_cost, nxt_node });
-					path[nxt_node].push(from);
 					result[nxt_node] = via_cost;
 				}
 			}
 		}
 		for (int i = 1; i < graph->getSize(); i++) {
-			if (!path[i].empty()&&!(i==vertex)) {
+			if (i == vertex) continue;
+			path[i].push(i);
+			for (int j = i; vertex != prev[j]; j = prev[j]) {
+				path[i].push(prev[j]);
+			}
+
+		}
+
+		for (int i = 1; i < graph->getSize(); i++) {
+			if (!(i == vertex)) {
 				fout << "[" << i << "]" << "  " << vertex;
 			}
 			else {
 				continue;
 			}
-			while(!path[i].empty()) {
+			if (path[i].empty()) { //case of no distance handling
+				fout << "x " << endl;
+				continue;
+			}
+			while (!path[i].empty()) {
 				int num = path[i].top();
 				path[i].pop();
 				fout << "->" << num;
 			}
-			if (result != 0) {
-				fout <<result[i] << endl;
+			if (result[i] != 0) {
+				fout << "(" << result[i] << ")" << endl;
 			}
 		}
 		fout << "======================" << endl << endl;
+		delete[] nodes;
+		delete[] path;
+		delete[] s;
 		fout.close();
 	}
 	else if (option == 'N') {
 
-		vector<vector<pair<int, int>>> nodes;
+		vector<pair<int, int>>* nodes = new vector<pair<int, int>>[graph->getSize()];
 		for (int i = 1; i < graph->getSize(); i++) {
 			graph->getAdjacentEdges(i, s);
+
 			auto iter = s[i].begin();
 			while (iter != s[i].end()) {
+				if (iter->second < 0) { //minus case handling
+					delete[] s;
+					delete[] nodes;
+					fout.close();
+					return false;
+				}
 				nodes[i].push_back({ iter->second,iter->first });
 				iter++;
 			}
 		}
-		int result = 0;
 		int dist[10000]; //vertex ~to , cost
 		priority_queue<pair<int, int>> pq; //cost, to
 		for (int i = 0; i < 10000; i++) {
 			dist[i] = INT_MAX;
 		}
-		dist[vertex] = 0;
+
 
 		pq.push({ 0, vertex });
+		dist[vertex] = 0;
 		fout << "======== Dijkstra ========" << endl;
 		fout << "Undirected Graph Dijkstra result " << endl;
 		fout << "startvertex: " << vertex << endl;
+
+		stack <int>* path = new stack<int>[graph->getSize()];
+		int prev[10000];
+		for (int i = 0; i < 1000; i++) {
+			prev[i] = INT_MAX;
+		}
+		prev[vertex] = vertex;
+		int result[10000];
+		for (int i = 0; i < graph->getSize(); i++) {
+			result[i] = 0;
+		}
 		while (!pq.empty()) {
 			int cost = -pq.top().first;
-			int to = pq.top().second;
+			int from = pq.top().second;
 			pq.pop();
 
-			if (dist[to] < cost)
-				continue;
+			for (int i = 0; i < nodes[from].size(); i++) {
+				int via_cost = cost + nodes[from][i].first; //next cost
+				int nxt_node = nodes[from][i].second;  //next node
 
-			for (int i = 0; i < nodes[to].size(); i++) {
-				int via_cost = cost + nodes[to][i].first;
-
-				if (via_cost < dist[nodes[to][i].second]) {
-					dist[nodes[to][i].second] = via_cost;
-					pq.push({ -via_cost, nodes[to][i].second });
+				if (via_cost < dist[nxt_node]) {
+					result[nxt_node] = 0;
+					dist[nxt_node] = via_cost;
+					prev[nxt_node] = from;
+					pq.push({ -via_cost, nxt_node });
+					result[nxt_node] = via_cost;
 				}
 			}
 		}
+		for (int i = 1; i < graph->getSize(); i++) {
+			if (i == vertex) continue;
+			path[i].push(i);
+			for (int j = i; vertex != prev[j]; j = prev[j]) {
+				path[i].push(prev[j]);
+			}
 
+		}
+
+		for (int i = 1; i < graph->getSize(); i++) {
+			if (!(i == vertex)) {
+				fout << "[" << i << "]" << "  " << vertex;
+			}
+			else {
+				continue;
+			}
+			if (path[i].empty()) { //case of no distance handling
+				fout << "x" << endl;
+				continue;
+			}
+			while (!path[i].empty()) {
+				int num = path[i].top();
+				path[i].pop();
+				fout << "->" << num;
+			}
+			if (result[i] != 0) {
+				fout << "(" << result[i] << ")" << endl;
+			}
+		}
+		fout << "======================" << endl << endl;
+		delete[] nodes;
+		delete[] path;
+		delete[] s;
 		fout.close();
 	}
 	else {
-
+		delete[] s;
 		fout.close();
+		return false;
 	}
 	return true;
 }
 
 bool Bellmanford(Graph* graph, char option, int s_vertex, int e_vertex)
 {
-	return true;
+	ofstream fout; // print to log.txt
+	fout.open("log.txt", ios::app);
+
+	if (option == 'Y') {
+		map<int, int>* s = new map<int, int>[graph->getSize()];
+		int size = graph->getSize();
+		vector<int> dist(size, INT_MAX); //initialize
+		vector<int> prev(size, INT_MAX); //initialize
+		vector <pair<int, int>>* edge = new vector<pair<int, int>>[size];
+		dist[s_vertex] = 0;
+		prev[s_vertex] = s_vertex;
+		queue <int> path;
+		int result[10000];
+		for (int i = 0; i < 10000; i++) {
+			result[i] = 0;
+		}
+		for (int i = 1; i < size; i++)
+			graph->getAdjacentEdgesDirect(i, s); //s[from](to.weight)
+
+		for (int from = 1; from < size; from++) {
+			auto iter = s[from].begin();
+			while (iter != s[from].end()) {
+				edge[from].push_back({ iter->first,iter->second });
+				iter++;
+			}
+		}
+		for (int k = 0; k <= size - 2; k++) { //max edge to middle
+			for (int from = 1; from < size; from++) { //i is from
+				for (int j = 0; j < edge[from].size(); j++) { //j.first is to, j.second is weight
+					int to = edge[from][j].first;
+					int cost = edge[from][j].second;
+					if (dist[from] != INT_MAX && dist[to] > dist[from] + cost) {
+						result[to] = 0;
+						dist[to] = dist[from] + cost;
+						prev[to] = from;
+						result[to] = dist[to];
+					}
+				}
+
+			}
+		}
+		for (int from = 1; from < size; from++)
+		{
+			for (int j = 0; j < edge[from].size(); j++)
+			{
+				int to = edge[from][j].first;
+				int cost = edge[from][j].second;
+
+				// case of negaive cycle check
+				if (dist[from] != INT_MAX && dist[to] > dist[from] + cost)
+				{
+					delete[] s;
+					delete[] edge;
+					return false;
+				}
+			}
+		}
+		//print
+		if (dist[e_vertex] == INT_MAX) { //no distance
+			fout << "========Bellman-Ford========" << endl;
+			fout << "Directed Graph Bellman - Ford result" << endl;
+			fout << s_vertex << endl;
+			fout << "x" << endl;
+			fout << "========================" << endl << endl;
+			delete[] s;
+			delete[] edge;
+			fout.close();
+			return true;
+		}
+		for (int i = e_vertex; i != prev[i]; i = prev[i]) {
+			if (prev[i] == INT_MAX) { //case of no dist;
+				fout << "========Bellman-Ford========" << endl;
+				fout << "Directed Graph Bellman - Ford result" << endl;
+				fout << s_vertex << endl;
+				fout << "x" << endl;
+				fout << "========================" << endl << endl;
+				delete[] s;
+				delete[] edge;
+				fout.close();
+				return true;
+			}
+			else {
+				path.push(prev[i]);
+			}
+
+		}
+		fout << "========Bellman-Ford========" << endl;
+		fout << "Directed Graph Bellman - Ford result" << endl;
+		fout << s_vertex;
+		while (path.size() > 1) {
+			int num = path.front();
+			path.pop();
+			fout << "->" << num;
+		}
+		fout << "->" << e_vertex;
+		if (result[e_vertex] != 0) {
+			fout << "(" << result[e_vertex] << ")" << endl;
+		}
+
+		fout << "========================" << endl << endl;
+
+		delete[] s;
+		delete[] edge;
+		fout.close();
+	}
+
+	else if (option == 'N') {
+		map<int, int>* s = new map<int, int>[graph->getSize()];
+		int size = graph->getSize();
+		vector<int> dist(size, INT_MAX); //initialize
+		vector<int> prev(size, INT_MAX); //initialize
+		vector <pair<int, int>>* edge = new vector<pair<int, int>>[size];
+		dist[s_vertex] = 0;
+		prev[s_vertex] = s_vertex;
+		queue <int> path;
+		int result[10000];
+		for (int i = 0; i < 10000; i++) {
+			result[i] = 0;
+		}
+		for (int i = 1; i < size; i++)
+			graph->getAdjacentEdges(i, s); //s[from](to.weight)
+
+		for (int from = 1; from < size; from++) {
+			auto iter = s[from].begin();
+			while (iter != s[from].end()) {
+				edge[from].push_back({ iter->first,iter->second });
+				iter++;
+			}
+		}
+		for (int k = 0; k <= size - 2; k++) { //max edge to middle
+			for (int from = 1; from < size; from++) { //i is from
+				for (int j = 0; j < edge[from].size(); j++) { //j.first is to, j.second is weight
+					int to = edge[from][j].first;
+					int cost = edge[from][j].second;
+					if (dist[from] != INT_MAX && dist[to] > dist[from] + cost) {
+						result[to] = 0;
+						dist[to] = dist[from] + cost;
+						prev[to] = from;
+						result[to] = dist[to];
+					}
+				}
+
+			}
+		}
+		for (int from = 1; from < size; from++)
+		{
+			for (int j = 0; j < edge[from].size(); j++)
+			{
+				int to = edge[from][j].first;
+				int cost = edge[from][j].second;
+
+				// case of negaive cycle check
+				if (dist[from] != INT_MAX && dist[to] > dist[from] + cost)
+				{
+					delete[] s;
+					delete[] edge;
+					return false;
+				}
+			}
+		}
+		//print
+		if (dist[e_vertex] == INT_MAX) { //no distance
+			fout << "========Bellman-Ford========" << endl;
+			fout << "Directed Graph Bellman - Ford result" << endl;
+			fout << s_vertex << endl;
+			fout << "x" << endl;
+			fout << "========================" << endl << endl;
+			delete[] s;
+			delete[] edge;
+			fout.close();
+			return true;
+		}
+		for (int i = e_vertex; i != prev[i]; i = prev[i]) {
+			if (prev[i] == INT_MAX) { //case of no dist;
+				fout << "========Bellman-Ford========" << endl;
+				fout << "Directed Graph Bellman - Ford result" << endl;
+				fout << s_vertex << endl;
+				fout << "x" << endl;
+				fout << "========================" << endl << endl;
+				delete[] s;
+				delete[] edge;
+				fout.close();
+				return true;
+			}
+			else {
+				path.push(prev[i]);
+			}
+
+		}
+		fout << "========Bellman-Ford========" << endl;
+		fout << "Undirected Graph Bellman - Ford result" << endl;
+		fout << s_vertex;
+		while (path.size() > 1) {
+			int num = path.front();
+			path.pop();
+			fout << "->" << num;
+		}
+		fout << "->" << e_vertex;
+		if (result[e_vertex] != 0) {
+			fout << "(" << result[e_vertex] << ")" << endl;
+		}
+
+		fout << "========================" << endl << endl;
+
+		delete[] s;
+		delete[] edge;
+		fout.close();
+	}
+	else {
+		fout.close();
+		return false;
+	}
 }
 
 bool FLOYD(Graph* graph, char option)
 {
+	ofstream fout; // print to log.txt
+	fout.open("log.txt", ios::app);
+	int size = graph->getSize();
+	map<int, int>* m = new map<int, int>[size]; // m is (to, weight)
+	if (option == 'Y') {
+		int dist[100][100];
+		for (int i = 0; i < 100; i++) {
+			for (int j = 0; j < 100; j++) {
+				dist[i][j] = 99999;
+			}
+		}
+
+		for (int from = 1; from < size; from++) {
+			graph->getAdjacentEdgesDirect(from, m);
+		}
+
+		for (int i = 1; i < size; i++) {
+			auto iter = m[i].begin();
+			while (iter != m[i].end()) {
+				dist[i][iter->first] = iter->second;
+				iter++;
+			}
+		}
+		for (int i = 1; i < size; i++) {
+			for (int j = 1; j < size; j++) {
+				if (i == j) dist[i][j] = 0;
+			}
+		}
+		for (int k = 1; k < size; k++) {
+			for (int from = 1; from < size; from++) {
+				for (int to = 1; to < size; to++) {
+					if (dist[from][k] + dist[k][to] < dist[from][to]) {
+						dist[from][to] = dist[from][k] + dist[k][to];
+					}
+				}
+			}
+		}
+
+		for (int k = 1; k < size; k++) { //case of minus cycle
+			for (int from = 1; from < size; from++) {
+				for (int to = 1; to < size; to++) {
+					if (dist[from][k] + dist[k][to] < dist[from][to]) {
+						delete[] m;
+						fout.close();
+						return false;
+					}
+				}
+			}
+		}
+
+
+
+		fout << "========FLOYD========" << endl;
+		fout << "Directed Graph FLOYD result" << endl;
+		fout << "    ";
+		for (int i = 1; i < size; i++) {
+			fout << "[" << i << "]  ";
+		}
+		fout << endl;
+		for (int i = 1; i < size; i++)
+		{
+			fout << "[" << i << "]  ";
+			for (int j = 1; j < size; j++)
+			{
+				if (dist[i][j] == 99999) { //if no change, infinite == no distance
+					fout << "x   ";
+				}
+				else {
+					fout << dist[i][j] << "   ";
+				}
+			}
+			fout << endl;
+		}
+		fout << endl << "========================" << endl << endl;
+	}
+
+
+	else if (option == 'N') {
+
+		int dist[100][100];
+		for (int i = 0; i < 100; i++) {
+			for (int j = 0; j < 100; j++) {
+				dist[i][j] = 99999;
+			}
+		}
+
+		for (int from = 1; from < size; from++) {
+			graph->getAdjacentEdges(from, m);
+		}
+
+		for (int i = 1; i < size; i++) {
+			auto iter = m[i].begin();
+			while (iter != m[i].end()) {
+				dist[i][iter->first] = iter->second;
+				iter++;
+			}
+		}
+		for (int i = 1; i < size; i++) {
+			for (int j = 1; j < size; j++) {
+				if (i == j) dist[i][j] = 0;
+			}
+		}
+		for (int k = 1; k < size; k++) {
+			for (int from = 1; from < size; from++) {
+				for (int to = 1; to < size; to++) {
+					if (dist[from][k] + dist[k][to] < dist[from][to]) {
+						dist[from][to] = dist[from][k] + dist[k][to];
+					}
+				}
+			}
+		}
+
+		for (int k = 1; k < size; k++) { //case of minus cycle
+			for (int from = 1; from < size; from++) {
+				for (int to = 1; to < size; to++) {
+					if (dist[from][k] + dist[k][to] < dist[from][to]) {
+						delete[] m;
+						fout.close();
+						return false;
+					}
+				}
+			}
+		}
+
+
+
+		fout << "========FLOYD========" << endl;
+		fout << "Undirected Graph FLOYD result" << endl;
+		fout << "    ";
+		for (int i = 1; i < size; i++) {
+			fout << "[" << i << "]  ";
+		}
+		fout << endl;
+		for (int i = 1; i < size; i++)
+		{
+			fout << "[" << i << "]  ";
+			for (int j = 1; j < size; j++)
+			{
+				if (dist[i][j] == 99999) { //if no change, infinite == no distance
+					fout << "x   ";
+				}
+				else {
+					fout << dist[i][j] << "   ";
+				}
+			}
+			fout << endl;
+		}
+		fout << endl << "========================" << endl << endl;
+
+	}
+	else {
+	delete[] m;
+	fout.close();
+	return false;
+	}
+	delete[] m;
+	fout.close();
 	return true;
 }
 
 bool KWANGWOON(Graph* graph, int vertex) {
+	ofstream fout; // print to log.txt
+	fout.open("log.txt", ios::app);
+	int size = graph->getSize();
+	if (size == 0) { // ndone have 1 error
+		fout.close();
+		return false;
+	}
+	map<int, int>* s = new map<int, int>[graph->getSize()];
+	vector<bool> visited(size, false);
+	queue<int> path;
+	for (int from = 1; from < size; from++) {
+		graph->getAdjacentEdges(from, s);
+	}
+	visited[vertex] = true;
+	int cnt = 1; //count
+	int next = 0;
+	for (int from = vertex; cnt != (size - 1); from = next) {
+		if (s[from].size() % 2 == 0) { //even
+			auto iter = s[from].begin();
+			while (iter != s[from].end()) {
+				if (!visited[iter->first]) {
+					next = iter->first; //next is low vertex
+					cnt++;
+					visited[next] = true;
+					path.push(next);
+					break;
+				}
+				else
+					iter++;
+			}
+		}
+		else { //odd
+			auto iter = s[from].rbegin();
+			while (iter != s[from].rend()) {
+				if (!visited[iter->first]) {
+					next = iter->first; //next is low vertex
+					cnt++;
+					visited[next] = true;
+					path.push(next);
+					break;
+				}
+				else
+					iter++;
+			}
+		}
+
+	}
+	fout << "========KWANGWOON========" << endl;
+	fout << "startvertex: 1" << endl << vertex;
+	while (!path.empty()) {
+		int num = path.front();
+		path.pop();
+		fout << " -> " << num;
+	}
+	fout << endl << "========================" << endl << endl;
+
+	delete[] s;
+	fout.close();
 	return true;
 }
 
@@ -454,15 +971,4 @@ bool sameparent(int x, int y) {
 	if (x == y) return true;
 	else return false;
 }
-int get_small_node(int ** dist, bool** visited, int size) {
-	// 최소비용노드 탐색 함수
-	int min = INT_MAX;
-	int minpos = 0;
-	for (int i = 0; i < size; i++) {
-		if (*dist[i] < min && !visited[i]) {
-			min = *dist[i];
-			minpos = i;
-		}
-	}
-	return minpos;
-}
+
