@@ -10,11 +10,7 @@ MatrixGraph::MatrixGraph(bool type, int size) : Graph(type, size)
 	for (int i = 1; i < size; i++) {
 		m_Mat[i] = new int[size];
 	}
-	for (int i = 0; i < size; i++) {
-		for (int j = 0; j < size; j++) {
-			m_Mat[i][j] = 0;
-		}
-	}
+	
 }
 
 MatrixGraph::~MatrixGraph()

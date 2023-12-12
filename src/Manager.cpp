@@ -83,6 +83,7 @@ void Manager::run(const char* command_txt) {
 		}
 	}
 	Kruskal(graph);
+	Dijkstra(graph, 'Y', 1);
 	fin.close();
 	return;
 }

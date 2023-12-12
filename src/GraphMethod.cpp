@@ -259,77 +259,117 @@ bool Dijkstra(Graph* graph, char option, int vertex)
 	map<int, int>* s = new map<int, int>[graph->getSize()];
 
 	if (option == 'Y') {
-		vector<pair<int, pair<int, int>>> w;
+		vector<pair<int, int>>* nodes = new vector<pair<int, int>>[graph->getSize()];
 		for (int i = 1; i < graph->getSize(); i++) {
 			graph->getAdjacentEdgesDirect(i, s);
+
 			auto iter = s[i].begin();
 			while (iter != s[i].end()) {
-				w.push_back({ iter->second,{i,iter->first} });
+				if (iter->second < 0) {
+					delete[] s;
+					delete[] nodes;
+					fout.close();
+					return false;
+				}
+				nodes[i].push_back({ iter->second,iter->first });
 				iter++;
 			}
 		}
-		QuickSort(&w, 0, w.size() - 1);
-		int result = 0;
-		int i = 0;
-		for (int i = 0; i < w.size(); i++) {
-			if (w[i].first < 0) {
-				fout.close();
-				delete[] s;
-				return false;
-			}
+		int dist[10000]; //vertex ~to , cost
+		priority_queue<pair<int, int>> pq; //cost, to
+		for (int i = 0; i < 10000; i++) {
+				dist[i] = INT_MAX;
 		}
+		
+
+		pq.push({0, vertex});
+		dist[vertex] = 0;
 		fout << "======== Dijkstra ========" << endl;
 		fout << "Directed Graph Dijkstra result " << endl;
 		fout << "startvertex: " << vertex << endl;
-		int* dist = new int[graph->getSize()];
-		bool* visited = new bool[graph->getSize()];
-		
+
+		stack <int>* path = new stack<int>[graph->getSize()];
+		int* result = new int[graph->getSize()];
 		for (int i = 0; i < graph->getSize(); i++) {
-			int length = INT_MAX;
-			visited[i] = false;
-			for (int j = 0; j < graph->getSize(); j++) {
-				if ((w[j].second.first == vertex) && w[j].second.second == i)
-					length = w[j].first;
-			}
-			dist[i] = length; //from vertex to i;
+			result[i] = 0;
 		}
-		visited[0] = true;
-		dist[0] = INT_MAX;
-		visited[vertex] = true;
-		dist[vertex] = 0;
-		stack<int> path;
-		for (int i = 0; i < graph->getSize()-2; i++) { //number of edge
-			int minDist = INT_MAX;
-			int minIndex = -1;
+		while (!pq.empty()) {
+			int cost = -pq.top().first;
+			int from = pq.top().second;
+			pq.pop();
 
-			for (int j = 0; j < graph->getSize(); j++) {
-				if (!visited[j] && dist[j] < minDist) {
-					minDist = dist[j];
-					minIndex = j;
-				}
-			}
-			
-			visited[minIndex] = true;
-			path.push(minIndex);
-			// 최단 거리를 갖는 정점을 기준으로 인접한 정점들의 거리 갱신
-			for (int j = 0; j < graph->getSize(); j++) {
-				if (!visited[j] && graph->isAdjacent(minIndex, j) && dist[minIndex] + graph->getWeight(minIndex, j) < dist[j]) {
-					dist[j] = dist[minIndex] + graph->getWeight(minIndex, j);
+			for (int i = 0; i < nodes[from].size(); i++) {
+				int via_cost = cost + nodes[from][i].first; //next cost
+				int nxt_node = nodes[from][i].second;  //next node
+
+				if (via_cost < dist[nxt_node]) {
+					result[nxt_node] = 0;
+					dist[nxt_node] = via_cost;
+					pq.push({ -via_cost, nxt_node });
+					path[nxt_node].push(from);
+					result[nxt_node] = via_cost;
 				}
 			}
 		}
-
-		delete[] dist;
-		delete[] visited;
-
+		for (int i = 1; i < graph->getSize(); i++) {
+			if (!path[i].empty()&&!(i==vertex)) {
+				fout << "[" << i << "]" << "  " << vertex;
+			}
+			else {
+				continue;
+			}
+			while(!path[i].empty()) {
+				int num = path[i].top();
+				path[i].pop();
+				fout << "->" << num;
+			}
+			if (result != 0) {
+				fout <<result[i] << endl;
+			}
+		}
+		fout << "======================" << endl << endl;
 		fout.close();
 	}
 	else if (option == 'N') {
 
-		graph->getAdjacentEdges(vertex, s);
+		vector<vector<pair<int, int>>> nodes;
+		for (int i = 1; i < graph->getSize(); i++) {
+			graph->getAdjacentEdges(i, s);
+			auto iter = s[i].begin();
+			while (iter != s[i].end()) {
+				nodes[i].push_back({ iter->second,iter->first });
+				iter++;
+			}
+		}
+		int result = 0;
+		int dist[10000]; //vertex ~to , cost
+		priority_queue<pair<int, int>> pq; //cost, to
+		for (int i = 0; i < 10000; i++) {
+			dist[i] = INT_MAX;
+		}
+		dist[vertex] = 0;
+
+		pq.push({ 0, vertex });
 		fout << "======== Dijkstra ========" << endl;
 		fout << "Undirected Graph Dijkstra result " << endl;
 		fout << "startvertex: " << vertex << endl;
+		while (!pq.empty()) {
+			int cost = -pq.top().first;
+			int to = pq.top().second;
+			pq.pop();
+
+			if (dist[to] < cost)
+				continue;
+
+			for (int i = 0; i < nodes[to].size(); i++) {
+				int via_cost = cost + nodes[to][i].first;
+
+				if (via_cost < dist[nodes[to][i].second]) {
+					dist[nodes[to][i].second] = via_cost;
+					pq.push({ -via_cost, nodes[to][i].second });
+				}
+			}
+		}
 
 		fout.close();
 	}
@@ -414,4 +454,15 @@ bool sameparent(int x, int y) {
 	if (x == y) return true;
 	else return false;
 }
-
+int get_small_node(int ** dist, bool** visited, int size) {
+	// 최소비용노드 탐색 함수
+	int min = INT_MAX;
+	int minpos = 0;
+	for (int i = 0; i < size; i++) {
+		if (*dist[i] < min && !visited[i]) {
+			min = *dist[i];
+			minpos = i;
+		}
+	}
+	return minpos;
+}
